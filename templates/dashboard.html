@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+</div>
+
+<!-- System Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Snort Engine Status</h5>
+                <p class="card-text" id="snort-status">Loading...</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Last Update</h5>
+                <p class="card-text" id="last-update">Loading...</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">System Status</h5>
+                <p class="card-text" id="system-status">Loading...</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Uptime</h5>
+                <p class="card-text" id="uptime">Loading...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Traffic Summary Chart -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Traffic Summary</h5>
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Live Alerts</h5>
+                <div id="alerts-list" class="list-group">
+                    <!-- Alerts will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Function to update system status
+    function updateSystemStatus() {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('snort-status').textContent = data.snort_status;
+                document.getElementById('last-update').textContent = data.last_update;
+                document.getElementById('system-status').textContent = data.system_status;
+                document.getElementById('uptime').textContent = data.uptime;
+            });
+    }
+
+    // Function to update traffic chart
+    function updateTrafficChart() {
+        fetch('/api/traffic')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('trafficChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Allowed Packets', 'Blocked Packets'],
+                        datasets: [{
+                            data: [data.allowed_packets, data.blocked_packets],
+                            backgroundColor: ['#28a745', '#dc3545']
+                        }]
+                    }
+                });
+            });
+    }
+
+    // Function to update alerts
+    function updateAlerts() {
+        fetch('/api/alerts')
+            .then(response => response.json())
+            .then(alerts => {
+                const alertsList = document.getElementById('alerts-list');
+                alertsList.innerHTML = '';
+                alerts.forEach(alert => {
+                    const alertElement = document.createElement('a');
+                    alertElement.href = '#';
+                    alertElement.className = 'list-group-item list-group-item-action';
+                    alertElement.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${alert.type}</h6>
+                            <small>${alert.timestamp}</small>
+                        </div>
+                        <p class="mb-1">Source: ${alert.source}</p>
+                        <small class="text-${alert.severity === 'Critical' ? 'danger' : alert.severity === 'High' ? 'warning' : 'info'}">${alert.severity}</small>
+                    `;
+                    alertsList.appendChild(alertElement);
+                });
+            });
+    }
+
+    // Update all data initially and then every 5 seconds
+    function updateAll() {
+        updateSystemStatus();
+        updateTrafficChart();
+        updateAlerts();
+    }
+
+    updateAll();
+    setInterval(updateAll, 5000);
+</script>
+{% endblock %} 

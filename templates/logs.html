@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Logs</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshLogs()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <pre id="log-content" class="bg-light p-3 rounded" style="max-height: 600px; overflow-y: auto;">
+Loading logs...
+        </pre>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function refreshLogs() {
+        // In a real implementation, this would fetch logs from your backend
+        const mockLogs = `[${new Date().toISOString()}] INFO: System started
+[${new Date().toISOString()}] INFO: Snort engine initialized
+[${new Date().toISOString()}] WARNING: High CPU usage detected
+[${new Date().toISOString()}] INFO: New rule update available
+[${new Date().toISOString()}] ERROR: Failed to process packet from 192.168.1.100
+[${new Date().toISOString()}] INFO: Blocked suspicious connection attempt
+[${new Date().toISOString()}] INFO: System running normally`;
+
+        document.getElementById('log-content').textContent = mockLogs;
+    }
+
+    // Initial load
+    refreshLogs();
+</script>
+{% endblock %} 

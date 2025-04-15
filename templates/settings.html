@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Detection Threshold Settings</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Threshold Configuration</h5>
+                <form id="threshold-form">
+                    <div class="mb-4">
+                        <label for="max-packets" class="form-label">Maximum Packets per Second</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="max-packets" name="max_packets" 
+                                   min="1" step="1" value="1000" required>
+                            <span class="input-group-text">packets/sec</span>
+                        </div>
+                        <div class="form-text">Set the maximum allowed packets per second before triggering an alert.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="max-connections" class="form-label">Maximum Failed Connections</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="max-connections" name="max_connections" 
+                                   min="1" step="1" value="50" required>
+                            <span class="input-group-text">connections</span>
+                        </div>
+                        <div class="form-text">Set the maximum number of failed connections before triggering an alert.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Save Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('threshold-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const settings = {
+        max_packets: parseInt(document.getElementById('max-packets').value),
+        max_connections: parseInt(document.getElementById('max-connections').value)
+    };
+
+    // Send settings to backend
+    fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Show success message
+        alert('Settings saved successfully!');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving settings. Please try again.');
+    });
+});
+</script>
+{% endblock %} 
